@@ -11,7 +11,7 @@ router.register('gradeapi',GradeView , basename='grade' )
 
 urlpatterns = [
     path('view-grade/',ListGradesView.as_view() , name='view-grade'),
-    path('list-assingment/' , ListAssignmentView.as_view() , name = 'list-assignment' ),
+    path('list-assignment/' , ListAssignmentView.as_view() , name = 'list-assignment' ),
     path('list-submission/' , ListSubmissionView.as_view() , name = 'list-submission' ),
     path('', include(router.urls)),
     path('api/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

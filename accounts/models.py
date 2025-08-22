@@ -31,6 +31,7 @@ class User(AbstractBaseUser):
     ROLE_CHOICES = (
         ("teacher", "Teacher"),
         ("student", "Student"),
+        ("admin", "Admin"),
     )
 
     email = models.EmailField(unique=True, max_length=255)
@@ -69,6 +70,10 @@ class Assignment(models.Model):
         User, on_delete=models.CASCADE, related_name="assignments_received"
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="assignments_updated"
+    )
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title

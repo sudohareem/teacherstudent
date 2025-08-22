@@ -7,12 +7,12 @@ from .permissions import IsTeacher, IsStudent
 from rest_framework.generics import ListAPIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView
 from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.views import APIView
-# Create your views here.
+from rest_framework.exceptions import PermissionDenied
+
 
 class AssignmentViewSet(viewsets.ModelViewSet):
     queryset = Assignment.objects.all()
@@ -20,6 +20,12 @@ class AssignmentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
+
+    def perform_update(self, serializer):
+        if self.request.user.role == 'teacher':
+            serializer.save(updated_by=self.request.user)
+        else:
+            raise PermissionDenied("Only teachers are allowed to update assignments.")
 
 class ListAssignmentView(ListAPIView):
     serializer_class = AssignmentSerializer
@@ -35,6 +41,9 @@ class SubmissionViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(submitted_by=self.request.user)
 
+    def perform_update(self, serializer):
+        serializer.save(updated_by=self.request.user)
+
 class ListSubmissionView(ListAPIView):
     serializer_class = SubmissionSerializer
     permission_classes = [IsTeacher]
@@ -49,6 +58,9 @@ class GradeView(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(graded_by=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save(updated_by=self.request.user)
 
 class ListGradesView(ListAPIView):
     serializer_class = GradeSerializer
@@ -85,3 +97,5 @@ class UserLogin(APIView):
                 return Response({'msg':'Email or Password is incorrect'} , status=status.HTTP_404_NOT_FOUND)
 
         return Response(serializer.errors , status=status.HTTP_400_BAD_REQUEST)
+#TODO patch and put
+
