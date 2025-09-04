@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import User, Assignment, Submission, Grade
 
+
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
@@ -13,15 +14,24 @@ class UserSerializer(serializers.ModelSerializer):
         password = validated_data.pop('password', None)
         user = User(**validated_data)
         if password:
-            user.set_password(password)
+            user.set_password(password)  # hashing done here
         user.save()
         return user
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop("password", None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        if password:
+            instance.set_password(password)
+        instance.save()
+        return instance
 
 
 class AssignmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Assignment
-        fields = ['id', 'title', 'description', 'assigned_to', ]
+        fields = ['id', 'title', 'description', 'assigned_to']
 
 
 class SubmissionSerializer(serializers.ModelSerializer):
@@ -35,15 +45,19 @@ class GradeSerializer(serializers.ModelSerializer):
         model = Grade
         fields = ['id', 'assignment', 'graded_to', 'score']
 
+
 class RegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id' , 'name' , 'email' ,'password' , 'role']
+        fields = ['id', 'name', 'email', 'password', 'role']
+
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
 
+
 class LoginSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(max_length = 255)
+    email = serializers.EmailField(max_length=255)
+
     class Meta:
         model = User
-        fields = ['email' ,'password']
+        fields = ['email', 'password']
